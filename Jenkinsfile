@@ -1,1 +1,63 @@
-
+pipeline {
+    agent any
+    environment {
+        registry = "docker.io/fajarsujai/laravel_reca"
+        serviceName= 'reca'
+        dockerImage = ''
+        branchname = "main"
+    }
+    stages {
+        stage("Clone Code") {
+            steps {
+                script {
+                checkout scm: [$class: 'GitSCM', userRemoteConfigs: [[url: 'https://github.com/fajarsujai/reca',
+                credentialsId: 'credential_fajarsujai_git']], branches: [[name: "${branchname}" ]]],poll: true
+                env.HASH = sh(script: "echo \$(git rev-parse --short HEAD)",returnStdout: true).trim()
+                env.VERSION = "${env.BUILD_NUMBER}-${branchname}-${env.HASH}"
+                }
+            }
+        }
+        stage('Building Image') {
+            steps{
+                script {
+                    sh "docker build -t $registry:$env.VERSION ."
+                }
+            }
+        }
+        stage('Login') {
+            environment {
+                DOCKER_USERNAME = credentials("dockerhub-fajarsujai-username")
+                DOCKER_PASSWORD = credentials("dockerhub-fajarsujai-password")
+            }
+            steps{ 
+                script {
+                    sh "docker login --username ${DOCKER_USERNAME} --password ${DOCKER_PASSWORD}"
+                    }
+                }
+            }
+        stage('Push Image') {
+            steps{ 
+                script {
+                    sh "docker push $registry:$env.VERSION"
+                    }
+                }
+            }
+        stage('Remove Unused Docker Image') {
+            steps{
+                script {
+                    sh "docker rmi $registry:$env.VERSION"
+                }
+            }
+        }
+        // stage('Deploy to Kubernetes') {
+        //     steps{
+        //         script {
+        //                 sh "sed -i 's/landingpage:latest/laravel_reca:$env.VERSION/g' deployment.yaml"
+        //                 sh "kubectl apply -f deployment.yaml"
+        //                 sh "kubectl rollout status deployment landingpage"
+        //                 sh "kubectl get pods | grep landingpage"
+        //         }
+        //     }
+        // }
+    }
+}
