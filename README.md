@@ -1,2 +1,2 @@
-# Jenkinsfile-CI-Laravel8
-Jenkinsfile for Continous Integration Laravel 8
+# Jenkinsfile CI and push to Dockerhub Laravel 8
+Jenkinsfile for continous integration and push to dockerhub laravel 8
