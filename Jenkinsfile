@@ -49,15 +49,5 @@ pipeline {
                 }
             }
         }
-        // stage('Deploy to Kubernetes') {
-        //     steps{
-        //         script {
-        //                 sh "sed -i 's/landingpage:latest/laravel_reca:$env.VERSION/g' deployment.yaml"
-        //                 sh "kubectl apply -f deployment.yaml"
-        //                 sh "kubectl rollout status deployment landingpage"
-        //                 sh "kubectl get pods | grep landingpage"
-        //         }
-        //     }
-        // }
     }
 }
